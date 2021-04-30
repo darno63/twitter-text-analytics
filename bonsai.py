@@ -1,6 +1,6 @@
 import os, base64, re, logging, time, json
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, RequestError
 from kafka import KafkaConsumer
 from kafka.admin import KafkaAdminClient, NewTopic
 
@@ -38,30 +38,32 @@ def elasticsearch_connect():
 
 def elasticsearch_consumer_main():
   es = elasticsearch_connect()
+
   # To consume messages
-  consumer = KafkaConsumer('covid_tweets',
-                           auto_commit_interval_ms= 30 * 1000,
-                           auto_offset_reset='earliest',
-                           bootstrap_servers = ['localhost:9092'])
+  consumer = KafkaConsumer(
+    'vaccination_tweets',
+    auto_commit_interval_ms= 30 * 1000,
+    auto_offset_reset='earliest',
+    bootstrap_servers = ['localhost:9092']
+  )
 
   esid = -1
 
   for message in consumer:
     time.sleep(1)
-    print('next')
-    esid += 1
-    if esid % 1000 == 0:
-      print(esid)
+    try:
+      print('next')
+      esid += 1
+      if esid % 1000 == 0:
+        print(esid)
 
-    msg = json.loads(message.value)
+      msg = json.loads(message.value)
+      msg_id = msg['id']
+      print(msg)
+      res = es.index(index="vaccination_tweets", id=msg_id, body=msg)
 
-    msg_id = msg['id']
-    print(msg)
-
-    res = es.index(index="covid_tweets", id=msg_id, body=msg)
-
-
-
+    except RequestError as err:
+      print(err)
 
 if __name__ == '__main__':
   elasticsearch_consumer_main()

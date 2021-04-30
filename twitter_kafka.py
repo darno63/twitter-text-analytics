@@ -38,7 +38,7 @@ class StdOutListener(StreamListener):
     def on_data(self, data):
         data_json = json.loads(data)
         if data_json['user']['followers_count'] > 1000:
-            kafka_producer.send("covid_tweets", data.encode('utf-8')).get(timeout=10)
+            kafka_producer.send("vaccination_tweets", data.encode('utf-8')).get(timeout=2)
             print(data)
         return True
 
@@ -51,9 +51,11 @@ def kafka_run():
     auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
     stream = Stream(auth, l)
-    stream.filter(track=["pfizer", "J&J", "moderna", "covid vaccine"])
+    stream.filter(track=["vaccination", "vaccine", "injection", "doses"])
 
-# ["pfizer", "vaccination", "vaccine", "J&J", "moderna"]
+# important_tweets ["climate change", "gas", "oil", "renewable energy"]
+# covid_tweets ["pfizer", "J&J", "moderna", "covid vaccine"]
+# vaccination_tweets ["vaccination", "vaccine", "injection", "doses"]
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
