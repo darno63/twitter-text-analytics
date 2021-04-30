@@ -39,7 +39,7 @@ def elasticsearch_connect():
 def elasticsearch_consumer_main():
   es = elasticsearch_connect()
   # To consume messages
-  consumer = KafkaConsumer('trump',
+  consumer = KafkaConsumer('covid_tweets',
                            auto_commit_interval_ms= 30 * 1000,
                            auto_offset_reset='earliest',
                            bootstrap_servers = ['localhost:9092'])
@@ -58,7 +58,7 @@ def elasticsearch_consumer_main():
     msg_id = msg['id']
     print(msg)
 
-    res = es.index(index="tweets", id=msg_id, body=msg)
+    res = es.index(index="covid_tweets", id=msg_id, body=msg)
 
 
 
